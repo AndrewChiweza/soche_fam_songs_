@@ -1,92 +1,125 @@
+import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:soche_fam_songs/components/main_tabs.dart';
+import 'package:soche_fam_songs/providers/admins_provider.dart';
+import 'package:soche_fam_songs/providers/push_notify_provider.dart';
+import 'package:soche_fam_songs/theme/app_theme.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:soche_fam_songs/theme/theme_provider.dart';
+import 'firebase_options.dart';
 
-void main() => runApp(const MyApp());
+import 'providers/songs_provider.dart';
+import 'providers/favorites_provider.dart';
+import 'providers/notifications_provider.dart';
+import 'screens/welcome_screen.dart';
+import 'screens/admin/admin_panel_screen.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  static const String _title = 'Flutter Stateful Clicker Counter';
-  // This widget is the root of your application.
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await Hive.initFlutter();
+  await Hive.openBox("Favorites");
+  await Hive.openBox("AppPrefs"); // Box for firstLaunch & adminLogin flags
+
+  runApp(const SongLyricsApp());
+}
+
+class SongLyricsApp extends StatelessWidget {
+  const SongLyricsApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: _title,
-      theme: ThemeData(
-        // useMaterial3: false,
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SongsProvider()),
+        ChangeNotifierProvider(create: (_) => FavoritesProvider()),
+        ChangeNotifierProvider(create: (_) => AnnouncementsProvider()),
+        ChangeNotifierProvider(create: (_) => AdminsProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => PushNotificationProvider())
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'SOCHE FAM',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            home: const StartupScreen(),
+          );
+        },
       ),
-      home: const MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-  // This class is the configuration for the state.
+/// Decides initial screen based on Hive flags
+class StartupScreen extends StatefulWidget {
+  const StartupScreen({Key? key}) : super(key: key);
+
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<StartupScreen> createState() => _StartupScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _StartupScreenState extends State<StartupScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkStartup();
+  }
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  Future<void> _checkStartup() async {
+    final box = Hive.box("AppPrefs");
+    final isFirstLaunch = box.get("first_launch", defaultValue: true);
+    final isAdminLoggedIn = box.get("admin_logged_in", defaultValue: false);
+
+    // Small delay for splash effect
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (isFirstLaunch) {
+      box.put("first_launch", false);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const WelcomePage()),
+      );
+    } else if (isAdminLoggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminPanelScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainTabs()),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: const Text('Flutter Demo Click Counter'),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: const TextStyle(fontSize: 25),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
     );
   }
+}
+
+/// Call this when admin logs in successfully
+Future<void> markAdminLoggedIn() async {
+  final box = Hive.box("AppPrefs");
+  box.put("admin_logged_in", true);
+}
+
+/// Call this when admin logs out
+Future<void> markAdminLoggedOut() async {
+  final box = Hive.box("AppPrefs");
+  box.put("admin_logged_in", false);
 }

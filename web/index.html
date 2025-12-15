@@ -34,5 +34,21 @@
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAV4dNyuRIWh0rvw1FL0PZVn5ESgP9ssUI",
+    authDomain: "choir-app-flutter.firebaseapp.com",
+    projectId: "choir-app-flutter",
+    storageBucket: "choir-app-flutter.firebasestorage.app",
+    messagingSenderId: "8675965925",
+    appId: "1:8675965925:web:66cd7c4b341fd1a5f58d0c",
+    measurementId: "G-G3T2QHGXYR"
+  };
+
+  initializeApp(firebaseConfig);
+</script>
+
 </body>
 </html>

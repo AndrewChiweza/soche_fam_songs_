@@ -10,6 +10,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cloud_firestore: ^5.0.0
+  firebase_core: ^3.0.0
+  share_plus: ^10.0.0
+  url_launcher: ^6.1.10
+  provider: ^6.1.0
+  shared_preferences: ^2.2.2
+  google_fonts:
+  font_awesome_flutter:
+  cupertino_icons:
+  hive:
+  hive_flutter:
+  firebase_auth:
+  firebase_messaging:
 
 dev_dependencies:
   flutter_test:
@@ -18,8 +31,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # assets:
-  #  - images/a_dot_burr.jpeg
+  assets:
+    - images/
   #  - images/a_dot_ham.jpeg
   # fonts:
   #   - family: Schyler
