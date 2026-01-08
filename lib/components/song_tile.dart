@@ -19,7 +19,7 @@ class SongTile extends StatelessWidget {
         style: const TextStyle(fontSize: 18),
       ),
       trailing: Icon(CupertinoIcons.chevron_compact_right,
-          size: 15, color: Theme.of(context).secondaryHeaderColor),
+          size: 16, color: Theme.of(context).secondaryHeaderColor),
     );
   }
 }
