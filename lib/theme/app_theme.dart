@@ -12,12 +12,12 @@ class AppTheme {
 
   // Backgrounds
   static const Color lightBackground =
-      Colors.white; // Soft light gray, easier on eyes than pure white
+      Color(0xFFFDFDFD); // Soft light gray, easier on eyes than pure white
   static const Color darkBackground =
       Color(0xFF121B12); // Deep, soft black-green
 
   // Cards
-  static const Color lightCard = Colors.white; // crisp, readable
+  static const Color lightCard = Color(0xFFFDFDFD); // crisp, readable
   static const Color darkCard =
       Color(0xFF1E2A1E); // soft dark card, distinct from background
 

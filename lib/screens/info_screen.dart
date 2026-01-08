@@ -65,13 +65,6 @@ class InfoScreen extends StatelessWidget {
                   width: 150,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 100,
-                        offset: const Offset(0, 3),
-                        color: Colors.black12,
-                      ),
-                    ],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),

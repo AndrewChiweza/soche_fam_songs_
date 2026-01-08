@@ -9,7 +9,7 @@ android {
     namespace = "com.example.soche_fam_songs"
 
     // ✅ Explicit SDK versions (recommended for Firebase)
-    compileSdk = 34
+    compileSdk = 35
 
     // ✅ FIX: Required by Firebase plugins
     ndkVersion = "27.0.12077973"
@@ -29,7 +29,7 @@ android {
         // ✅ FIX: Firebase Auth requires minSdk 23
         minSdk = 23
 
-        targetSdk = 34
+        targetSdk = 35
 
         versionCode = flutter.versionCode
         versionName = flutter.versionName
