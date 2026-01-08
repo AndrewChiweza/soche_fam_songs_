@@ -33,10 +33,11 @@ class FavoritesScreen extends StatelessWidget {
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
               title: const Text(
                 'Favorites',
               ),
-              centerTitle: true,
+              centerTitle: false,
             ),
             actions: [
               if (favSongs.isNotEmpty)
@@ -76,7 +77,7 @@ class FavoritesScreen extends StatelessWidget {
               ? SliverFillRemaining(
                   child: Center(
                     child: Text(
-                      '🩷\nFavorite Songs will appear here!',
+                      'Favorite Songs will appear here!',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),

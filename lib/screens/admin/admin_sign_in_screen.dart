@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:soche_fam_songs/components/app_snack_bar.dart';
 import 'package:hive/hive.dart';
+import 'package:soche_fam_songs/theme/app_theme.dart';
 import '../../providers/admins_provider.dart';
 import 'admin_panel_screen.dart';
 
@@ -98,7 +99,7 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
+                            backgroundColor: AppTheme.primaryGreen,
                             padding: const EdgeInsets.symmetric(
                                 vertical: 15, horizontal: 20),
                             shape: RoundedRectangleBorder(

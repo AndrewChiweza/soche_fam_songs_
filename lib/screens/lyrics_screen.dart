@@ -42,37 +42,34 @@ class LyricsScreen extends StatelessWidget {
 
     final isFav = favProv.isFavorite(song.id);
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          scrolledUnderElevation: 0,
-          automaticallyImplyLeading: false,
-          elevation: 2,
-          leading: IconButton(
-            icon: const Icon(CupertinoIcons.chevron_left),
-            onPressed: () {
-              // This button navigates back to the previous screen
-              Navigator.of(context).pop();
-            },
-          ),
-          title: Text(song.title),
-          actions: [
-            IconButton(
-              icon: Icon(
-                isFav ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
-                color: isFav ? Colors.red : const Color(0xFF0B3D2E),
-              ),
-              onPressed: () => favProv.toggleFavorite(song.id),
-            ),
-          ],
+    return Scaffold(
+      appBar: AppBar(
+        scrolledUnderElevation: 0.0,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(CupertinoIcons.chevron_left),
+          onPressed: () {
+            // This button navigates back to the previous screen
+            Navigator.of(context).pop();
+          },
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: SelectableText(
-              song.lyrics,
-              style: const TextStyle(fontSize: 20, height: 1.6),
+        title: Text(song.title),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isFav ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
+              color: isFav ? Colors.red : const Color(0xFF0B3D2E),
             ),
+            onPressed: () => favProv.toggleFavorite(song.id),
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: SelectableText(
+            song.lyrics,
+            style: const TextStyle(fontSize: 20, height: 1.6),
           ),
         ),
       ),

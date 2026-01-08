@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/notification.dart';
 import '../../providers/notifications_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 class AnnouncementFormScreen extends StatefulWidget {
   final Announcement? announcement;
@@ -17,8 +15,10 @@ class AnnouncementFormScreen extends StatefulWidget {
 
 class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _titleCtrl;
-  late TextEditingController _messageCtrl;
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _messageCtrl;
+
+  bool get isEditing => widget.announcement != null;
 
   @override
   void initState() {
@@ -28,92 +28,94 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
         TextEditingController(text: widget.announcement?.message ?? '');
   }
 
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final provider = context.read<AnnouncementsProvider>();
+
+    if (isEditing) {
+      provider.editAnnouncement(
+        Announcement(
+          id: widget.announcement!.id,
+          title: _titleCtrl.text,
+          message: _messageCtrl.text,
+          createdAt: widget.announcement!.createdAt,
+        ),
+      );
+    } else {
+      provider.addAnnouncement(
+        Announcement(
+          id: "",
+          title: _titleCtrl.text,
+          message: _messageCtrl.text,
+          createdAt: DateTime.now(),
+        ),
+      );
+    }
+
+    if (context.mounted) Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.announcement != null;
-
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(24),
+            bottomRight: Radius.circular(24),
+          ),
+        ),
         leading: IconButton(
           icon: const Icon(CupertinoIcons.chevron_left),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(isEditing ? "Edit Announcement" : "New Announcement"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _titleCtrl,
-                decoration: const InputDecoration(labelText: "Title"),
-                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverToBoxAdapter(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _titleCtrl,
+                      decoration: const InputDecoration(
+                        labelText: "Title",
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (v) => v!.isEmpty ? "Required" : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _messageCtrl,
+                      maxLines: 6,
+                      decoration: const InputDecoration(
+                        labelText: "Message",
+                        alignLabelWithHint: true,
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (v) => v!.isEmpty ? "Required" : null,
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _save,
+                        child: Text(isEditing ? "Save Changes" : "Create"),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _messageCtrl,
-                decoration: const InputDecoration(labelText: "Message"),
-                maxLines: 5,
-                validator: (v) => v == null || v.isEmpty ? "Required" : null,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                child: Text(isEditing ? "Save Changes" : "Create"),
-                onPressed: () async {
-                  if (!_formKey.currentState!.validate()) return;
-
-                  final announcementsProv =
-                      context.read<AnnouncementsProvider>();
-
-                  if (isEditing) {
-                    final updated = Announcement(
-                      id: widget.announcement!.id,
-                      title: _titleCtrl.text,
-                      message: _messageCtrl.text,
-                      createdAt: widget.announcement!.createdAt,
-                    );
-                    await announcementsProv.editAnnouncement(updated);
-                  } else {
-                    final newAnn = Announcement(
-                      id: "",
-                      title: _titleCtrl.text,
-                      message: _messageCtrl.text,
-                      createdAt: DateTime.now(),
-                    );
-                    await announcementsProv.addAnnouncement(newAnn);
-
-                    // 🔔 SEND PUSH NOTIFICATION VIA FCM
-                    await _sendPushNotification(
-                        title: newAnn.title, body: newAnn.message);
-                  }
-
-                  if (context.mounted) Navigator.pop(context);
-                },
-              )
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
-  }
-
-  /// ------------------ PUSH NOTIFICATION ------------------
-  Future<void> _sendPushNotification(
-      {required String title, required String body}) async {
-    final fcmServerKey = 'YOUR_SERVER_KEY_HERE'; // from Firebase console
-    final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
-
-    // Send notification to topic 'allUsers'
-    await FirebaseFirestore.instance.collection('fcmNotifications').add({
-      'title': title,
-      'body': body,
-      'createdAt': DateTime.now(),
-    });
-
-    // Optionally, you can also call your server or cloud function here
-    // to send notifications to topic 'allUsers' for real-time push.
   }
 }

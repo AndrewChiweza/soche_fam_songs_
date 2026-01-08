@@ -230,11 +230,12 @@ class _SongSearchDelegate extends SearchDelegate<String> {
   _SongSearchDelegate(this.provider);
 
   @override
-  String? get searchFieldLabel => "Search songs...";
+  String? get searchFieldLabel => "Type song title or number...";
 
   @override
-  TextStyle? get searchFieldStyle =>
-      const TextStyle(fontSize: 16, color: Colors.black87);
+  TextStyle? get searchFieldStyle => const TextStyle(
+        fontSize: 16,
+      );
 
   @override
   Widget? buildLeading(BuildContext context) {

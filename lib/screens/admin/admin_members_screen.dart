@@ -93,6 +93,7 @@ class _AdminMembersScreenState extends State<AdminMembersScreen> {
                   );
                 },
                 child: Card(
+                  color: Theme.of(context).cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

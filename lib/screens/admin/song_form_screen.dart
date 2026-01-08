@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:soche_fam_songs/theme/app_theme.dart';
 import '../../models/song.dart';
 import '../../services/firestore_service.dart';
 
@@ -25,15 +26,26 @@ class _SongFormScreenState extends State<SongFormScreen> {
   @override
   void initState() {
     super.initState();
-
     if (widget.existingSong != null) {
       isEditing = true;
       final s = widget.existingSong!;
       songId = s.id;
-
       _titleController.text = s.title;
       _lyricsController.text = s.lyrics;
     }
+  }
+
+  InputDecoration _input(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      filled: true,
+      fillColor: Theme.of(context).cardColor,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+    );
   }
 
   Future<void> _saveSong() async {
@@ -64,44 +76,89 @@ class _SongFormScreenState extends State<SongFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          icon: const Icon(CupertinoIcons.chevron_left),
-          onPressed: () {
-            // This button navigates back to the previous screen
-            Navigator.of(context).pop();
-          },
-          // Optional: customize the color
-        ),
-        title: Text(isEditing ? "Edit Song" : "Add Song"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: "Song Title"),
-                validator: (v) => v!.isEmpty ? "Required" : null,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          /// 🔷 APP BAR
+          SliverAppBar(
+            pinned: true,
+            elevation: 2,
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
               ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: _lyricsController,
-                decoration: const InputDecoration(labelText: "Lyrics"),
-                maxLines: 15,
-                validator: (v) => v!.isEmpty ? "Required" : null,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveSong,
-                child: Text(isEditing ? "Update Song" : "Add Song"),
-              )
-            ],
+            ),
+            leading: IconButton(
+              icon: const Icon(CupertinoIcons.chevron_left),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              isEditing ? "Edit Song" : "Add Song",
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            centerTitle: true,
           ),
-        ),
+
+          /// 📝 FORM
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverToBoxAdapter(
+              child: Form(
+                key: _formKey,
+                child: Material(
+                  elevation: 3,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _titleController,
+                          decoration: _input(
+                            "Song Title",
+                            CupertinoIcons.music_note,
+                          ),
+                          validator: (v) => v!.isEmpty ? "Required" : null,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _lyricsController,
+                          maxLines: 12,
+                          decoration: _input(
+                            "Lyrics",
+                            CupertinoIcons.doc_text,
+                          ),
+                          validator: (v) => v!.isEmpty ? "Required" : null,
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _saveSong,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryGreen,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              isEditing ? "Update Song" : "Add Song",
+                              style: const TextStyle(
+                                  fontSize: 16, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

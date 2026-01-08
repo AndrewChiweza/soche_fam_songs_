@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soche_fam_songs/components/main_tabs.dart';
-import '../screens/home_screen.dart'; // make sure this path is correct
+import 'package:soche_fam_songs/components/main_tabs.dart'; // make sure this path is correct
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({Key? key}) : super(key: key);
@@ -15,7 +14,7 @@ class WelcomePage extends StatelessWidget {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1F7D53), Color(0xFF3AB54A)],
+            colors: [Color(0xFF0D7840), Color(0xFF2EA371)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -29,11 +28,10 @@ class WelcomePage extends StatelessWidget {
                 "Welcome",
                 style: TextStyle(
                   fontSize: 24,
-                  fontWeight: FontWeight.w100,
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 50),
 
               // ---------------- LOGO ----------------
               Container(
@@ -41,13 +39,13 @@ class WelcomePage extends StatelessWidget {
                 height: size.width * 0.4,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      offset: const Offset(0, 5),
-                      blurRadius: 70,
-                    ),
-                  ],
+                  // boxShadow: [
+                  //   BoxShadow(
+                  //     color: Colors.black.withOpacity(0.25),
+                  //     offset: const Offset(0, 5),
+                  //     blurRadius: 0,
+                  //   ),
+                  // ],
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
@@ -55,20 +53,19 @@ class WelcomePage extends StatelessWidget {
                       Image.asset('images/ic_launcher.png', fit: BoxFit.cover),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 50),
 
               // ---------------- SOCHE FAM TITLE ----------------
               const Text(
                 "SOCHE FUTURE ADVENTIST MEN",
                 style: TextStyle(
                   fontSize: 30,
-                  fontWeight: FontWeight.w800,
                   color: Colors.white,
                   letterSpacing: 2,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 50),
+              const SizedBox(height: 70),
 
               // ---------------- GET STARTED BUTTON ----------------
               ElevatedButton(
@@ -78,7 +75,7 @@ class WelcomePage extends StatelessWidget {
                   backgroundColor: Colors.white,
                   foregroundColor: Theme.of(context).primaryColor,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   elevation: 5,
                 ),

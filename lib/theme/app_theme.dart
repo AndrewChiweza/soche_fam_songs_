@@ -2,12 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // MAIN COLORS — tuned to match your provided UI
-  static const Color primaryGreen = Color(0xFF0B6B57);
-  static const Color secondaryGreen = Color(0xff255F38);
-  static const Color lightBackground = Colors.white;
-  static const Color darkBackground = Color(0xFF18230F);
-  static const Color darkCard = Color(0xFF27391C);
+  // ------------------ COLORS ------------------
+  // Primary: Main brand color
+  static const Color primaryGreen =
+      Color(0xFF0D7840); // Slightly brighter & softer
+
+  // Secondary: Complementary color for accents/buttons
+  static const Color secondaryGreen = Color(0xFF2EA371); // Softer mint tone
+
+  // Backgrounds
+  static const Color lightBackground =
+      Colors.white; // Soft light gray, easier on eyes than pure white
+  static const Color darkBackground =
+      Color(0xFF121B12); // Deep, soft black-green
+
+  // Cards
+  static const Color lightCard = Colors.white; // crisp, readable
+  static const Color darkCard =
+      Color(0xFF1E2A1E); // soft dark card, distinct from background
+
+  // Text
+  static const Color lightTextPrimary =
+      Color(0xFF1B1B1B); // dark gray, not black
+  static const Color darkTextPrimary = Colors.white; // soft white for dark mode
 
   // ---------------- LIGHT THEME ----------------
   static ThemeData lightTheme = ThemeData(
@@ -15,7 +32,7 @@ class AppTheme {
     primaryColor: primaryGreen,
     scaffoldBackgroundColor: lightBackground,
     appBarTheme: AppBarTheme(
-      backgroundColor: Colors.white,
+      backgroundColor: lightCard,
       elevation: 0,
       iconTheme: const IconThemeData(color: primaryGreen),
       titleTextStyle: GoogleFonts.ptSansCaption(
@@ -32,10 +49,10 @@ class AppTheme {
       ),
       bodyMedium: GoogleFonts.ptSansCaption(
         fontSize: 18,
-        color: const Color(0xFF2F2F2F),
+        color: lightTextPrimary,
       ),
     ),
-    cardColor: Colors.white,
+    cardColor: lightCard,
     dividerColor: Colors.grey.shade300,
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.light,

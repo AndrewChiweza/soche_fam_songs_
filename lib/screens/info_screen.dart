@@ -48,9 +48,9 @@ class InfoScreen extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
               title: const Text(
-                "About this App",
+                "About app",
               ),
-              centerTitle: true,
+              centerTitle: false,
             ),
           ),
 
@@ -120,17 +120,9 @@ class InfoScreen extends StatelessWidget {
                       ),
                       _divider(),
                       _infoTile(
-                        icon: FontAwesomeIcons.linkedin,
-                        iconColor: Colors.blue,
-                        title: "LinkedIn",
-                        onTap: () => _launch(
-                            "https://www.linkedin.com/in/andrewchiweza/"),
-                      ),
-                      _divider(),
-                      _infoTile(
                         icon: FontAwesomeIcons.facebook,
                         iconColor: Colors.blue,
-                        title: "Facebook profile",
+                        title: "Facebook Developer",
                         onTap: () =>
                             _launch("https://facebook.com/andrew.chiweza"),
                       ),
@@ -143,14 +135,14 @@ class InfoScreen extends StatelessWidget {
                       _divider(),
                       _infoTile(
                         icon: Icons.help_outline,
-                        title: "Help or feedback",
+                        title: "Help or Feedback",
                         onTap: () async {
                           final email =
-                              Uri.encodeComponent("css-020-22@must.ac.mw");
+                              Uri.encodeComponent("andrewchiwz@gmail.com");
                           final subject = Uri.encodeComponent(
                               "SOCHE FAM songs App feedback");
                           final body = Uri.encodeComponent(
-                              "Hi Andrew, I would like to say...");
+                              "Hi Andrew, I have this feedback on Soche Fam Songs app:... ");
                           final Uri mail = Uri.parse(
                               "mailto:$email?subject=$subject&body=$body");
 
@@ -184,12 +176,13 @@ class InfoScreen extends StatelessWidget {
 
                 // ---------------- FOOTER ----------------
                 Text(
-                  "This app was made with 🩷 by Andrew Chiweza, "
-                  "software developer and a member of Soche Future Adventist Men.",
+                  "This app was made with love by Andrew Chiweza, a Software Developer and a member of Soche Future Adventist Men.\n\n"
+                  "With gratitude of what the community has done for him. May God bless you as you are ministering through singing.\n\n"
+                  "Please consider leaving a review in the Help or feedback, it helps more than you can imagine.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
-                    height: 1.4,
+                    fontSize: 14,
+                    height: 1.2,
                     color: Colors.grey.shade700,
                   ),
                 ),

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:soche_fam_songs/theme/app_theme.dart';
 import '../models/member.dart';
 import '../services/firestore_service.dart';
 
@@ -87,7 +88,7 @@ class _MemberRegistrationScreenState extends State<MemberRegistrationScreen> {
       labelText: label,
       prefixIcon: Icon(icon),
       filled: true,
-      fillColor: Colors.grey.shade100,
+      fillColor: Theme.of(context).cardColor,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
@@ -164,15 +165,16 @@ class _MemberRegistrationScreenState extends State<MemberRegistrationScreen> {
                         children: [
                           TextFormField(
                             controller: _voiceController,
-                            decoration:
-                                _input("Voice Type", CupertinoIcons.music_note),
+                            decoration: _input(
+                                "Voice (soprano, tenor, baritone, bass)",
+                                CupertinoIcons.music_note),
                             validator: (v) => v!.isEmpty ? "Required" : null,
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _churchController,
-                            decoration:
-                                _input("Local Church", CupertinoIcons.house),
+                            decoration: _input(
+                                "Current Resident", CupertinoIcons.house),
                             validator: (v) => v!.isEmpty ? "Required" : null,
                           ),
                           const SizedBox(height: 12),
@@ -180,7 +182,7 @@ class _MemberRegistrationScreenState extends State<MemberRegistrationScreen> {
                             controller: _purposeController,
                             maxLines: 2,
                             decoration: _input(
-                                "Purpose of Joining", CupertinoIcons.flag),
+                                "Why are you joining?", CupertinoIcons.flag),
                             validator: (v) => v!.isEmpty ? "Required" : null,
                           ),
                         ],
@@ -190,7 +192,7 @@ class _MemberRegistrationScreenState extends State<MemberRegistrationScreen> {
                     _FormCard(
                       child: SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text("Baptised"),
+                        title: const Text("Are you Baptised?"),
                         value: _baptised,
                         onChanged: (v) => setState(() => _baptised = v),
                       ),
@@ -201,6 +203,7 @@ class _MemberRegistrationScreenState extends State<MemberRegistrationScreen> {
                       child: ElevatedButton(
                         onPressed: _saveMember,
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryGreen,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -208,7 +211,8 @@ class _MemberRegistrationScreenState extends State<MemberRegistrationScreen> {
                         ),
                         child: Text(
                           isEditing ? "Update Member" : "Add Member",
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(
+                              fontSize: 16, color: Colors.white),
                         ),
                       ),
                     ),

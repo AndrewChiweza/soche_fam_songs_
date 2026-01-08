@@ -16,10 +16,10 @@ class SongTile extends StatelessWidget {
       title: Text(
         song.title,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+        style: const TextStyle(fontSize: 18),
       ),
-      trailing: Icon(CupertinoIcons.arrowtriangle_right_fill,
-          size: 16, color: Theme.of(context).primaryColor),
+      trailing: Icon(CupertinoIcons.chevron_compact_right,
+          size: 15, color: Theme.of(context).secondaryHeaderColor),
     );
   }
 }
