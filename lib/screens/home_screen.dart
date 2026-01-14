@@ -8,6 +8,7 @@ import 'package:soche_fam_songs/providers/songs_provider.dart';
 
 import 'package:soche_fam_songs/screens/admin/admin_sign_in_screen.dart';
 import 'package:soche_fam_songs/screens/registration_form_screen.dart';
+import 'package:soche_fam_songs/theme/app_theme.dart';
 import '../screens/lyrics_screen.dart';
 import '../screens/notifications_screen.dart';
 import '../components/song_tile.dart';
@@ -93,8 +94,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         opacity: collapseFactor, // fades out as we scroll
                         child: Container(
                           width: 80, // width under the text
-                          height: 2,
-                          color: const Color(0xFFFFD700),
+                          height: 4,
+                          color: AppTheme.primaryGreen,
                         ),
                       ),
                     ),
@@ -203,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       if (i != 0)
                         const Divider(
-                          height: 1,
+                          height: 0.2,
                           indent: 0,
                           endIndent: 0,
                         ),
@@ -221,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       if (i != songs.length - 1)
                         const Divider(
-                          height: 1,
+                          height: 0.2,
                           indent: 0,
                           endIndent: 0,
                         ),

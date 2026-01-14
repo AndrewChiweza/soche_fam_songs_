@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:soche_fam_songs/theme/app_theme.dart';
 import 'package:soche_fam_songs/theme/theme_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -69,8 +70,8 @@ class InfoScreen extends StatelessWidget {
                         opacity: collapseFactor,
                         child: Container(
                           width: 80,
-                          height: 2,
-                          color: const Color(0xFFFFD700),
+                          height: 4,
+                          color: AppTheme.primaryGreen,
                         ),
                       ),
                     ),

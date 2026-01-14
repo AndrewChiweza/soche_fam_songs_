@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:soche_fam_songs/theme/app_theme.dart';
 import '../../providers/favorites_provider.dart';
 import '../../providers/songs_provider.dart';
 import '../screens/lyrics_screen.dart';
@@ -57,8 +58,8 @@ class FavoritesScreen extends StatelessWidget {
                         opacity: collapseFactor, // fades out as we scroll
                         child: Container(
                           width: 80, // width under the text
-                          height: 2,
-                          color: const Color(0xFFFFD700),
+                          height: 4,
+                          color: AppTheme.primaryGreen,
                         ),
                       ),
                     ),
@@ -129,7 +130,7 @@ class FavoritesScreen extends StatelessWidget {
                       children: [
                         if (i != 0)
                           const Divider(
-                            height: 1,
+                            height: 0.2,
                             indent: 0,
                             endIndent: 0,
                           ),
@@ -167,7 +168,7 @@ class FavoritesScreen extends StatelessWidget {
                         ),
                         if (i != favSongs.length - 1)
                           const Divider(
-                            height: 1,
+                            height: 0.2,
                             indent: 0,
                             endIndent: 0,
                           ),

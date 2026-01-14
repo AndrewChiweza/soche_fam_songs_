@@ -13,6 +13,9 @@ class MainTabs extends StatefulWidget {
 
 class _MainTabsState extends State<MainTabs> {
   int _selectedIndex = 0;
+
+  final PageController _pageController = PageController();
+
   final List<Widget> _screens = const [
     HomeScreen(),
     FavoritesScreen(),
@@ -21,12 +24,31 @@ class _MainTabsState extends State<MainTabs> {
 
   void _onTap(int index) {
     setState(() => _selectedIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
+      // Use PageView for swipeable pages
+      body: PageView(
+        controller: _pageController,
+        physics: const BouncingScrollPhysics(), // smooth swipe
+        onPageChanged: (index) {
+          setState(() => _selectedIndex = index);
+        },
+        children: _screens,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 5,
