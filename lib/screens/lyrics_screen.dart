@@ -58,7 +58,9 @@ class LyricsScreen extends StatelessWidget {
           IconButton(
             icon: Icon(
               isFav ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
-              color: isFav ? Colors.red : const Color(0xFF0B3D2E),
+              color: isFav
+                  ? Colors.red
+                  : Theme.of(context).appBarTheme.foregroundColor,
             ),
             onPressed: () => favProv.toggleFavorite(song.id),
           ),

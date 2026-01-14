@@ -8,18 +8,19 @@ class AppTheme {
       Color(0xFF0D7840); // Slightly brighter & softer
 
   // Secondary: Complementary color for accents/buttons
-  static const Color secondaryGreen = Color(0xFF2EA371); // Softer mint tone
+  static const Color secondaryGreen =
+      const Color(0xFFFFD700); // Softer mint tone
 
   // Backgrounds
   static const Color lightBackground =
       Color(0xFFFDFDFD); // Soft light gray, easier on eyes than pure white
   static const Color darkBackground =
-      Color(0xFF121B12); // Deep, soft black-green
+      Color(0xFF0E0E0E); // Deep, soft black-green
 
   // Cards
   static const Color lightCard = Color(0xFFFDFDFD); // crisp, readable
   static const Color darkCard =
-      Color(0xFF1E2A1E); // soft dark card, distinct from background
+      Color(0xFF121212); // soft dark card, distinct from background
 
   // Text
   static const Color lightTextPrimary =

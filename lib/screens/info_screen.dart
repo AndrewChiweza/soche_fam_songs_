@@ -45,12 +45,38 @@ class InfoScreen extends StatelessWidget {
                 bottomRight: Radius.circular(24),
               ),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-              title: const Text(
-                "About app",
-              ),
-              centerTitle: false,
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final top = constraints.biggest.height;
+                final collapseFactor =
+                    ((top - kToolbarHeight) / (140 - kToolbarHeight))
+                        .clamp(0.0, 1.0);
+
+                return Stack(
+                  children: [
+                    FlexibleSpaceBar(
+                      titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+                      title: const Text(
+                        "Info",
+                        style: TextStyle(letterSpacing: 1.2),
+                      ),
+                      centerTitle: false,
+                    ),
+                    Positioned(
+                      left: 16,
+                      bottom: 12,
+                      child: Opacity(
+                        opacity: collapseFactor,
+                        child: Container(
+                          width: 80,
+                          height: 2,
+                          color: const Color(0xFFFFD700),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
 
@@ -59,31 +85,21 @@ class InfoScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // ---------------- LOGO ----------------
                 Container(
                   height: 150,
                   width: 150,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
                     child: Image.asset('images/ic_launcher.png'),
                   ),
                 ),
-
                 const SizedBox(height: 17),
-
                 const Text(
                   'SOCHE FAM SONGS APP',
-                  style: TextStyle(
-                    letterSpacing: 1,
-                  ),
+                  style: TextStyle(letterSpacing: 1),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 5),
-
                 Text(
                   "Version 1.0.0",
                   style: TextStyle(
@@ -92,10 +108,7 @@ class InfoScreen extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 20),
-
-                // ---------------- CARD ----------------
                 Card(
                   color: Theme.of(context).cardColor,
                   elevation: 4,
@@ -106,6 +119,7 @@ class InfoScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       _infoTile(
+                        context: context,
                         icon: FontAwesomeIcons.github,
                         title: "View source code",
                         onTap: () =>
@@ -113,6 +127,7 @@ class InfoScreen extends StatelessWidget {
                       ),
                       _divider(),
                       _infoTile(
+                        context: context,
                         icon: FontAwesomeIcons.facebook,
                         iconColor: Colors.blue,
                         title: "Facebook Developer",
@@ -121,12 +136,14 @@ class InfoScreen extends StatelessWidget {
                       ),
                       _divider(),
                       _infoTile(
+                        context: context,
                         icon: FontAwesomeIcons.shareNodes,
                         title: "Share this app...",
                         onTap: shareApp,
                       ),
                       _divider(),
                       _infoTile(
+                        context: context,
                         icon: Icons.help_outline,
                         title: "Help or Feedback",
                         onTap: () async {
@@ -164,10 +181,7 @@ class InfoScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 25),
-
-                // ---------------- FOOTER ----------------
                 Text(
                   "This app was made with love by Andrew Chiweza, a Software Developer and a member of Soche Future Adventist Men.\n\n"
                   "With gratitude of what the community has done for him. May God bless you as you are ministering through singing.\n\n"
@@ -193,18 +207,29 @@ class InfoScreen extends StatelessWidget {
   Widget _divider() => const Divider(height: 1, thickness: 0.4);
 
   Widget _infoTile({
+    required BuildContext context,
     required IconData icon,
     required String title,
     Color? iconColor,
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: iconColor ?? Colors.black87, size: 22),
+      leading: Icon(
+        icon,
+        size: 22,
+        color: iconColor ?? Theme.of(context).iconTheme.color,
+      ),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
       ),
-      trailing: const Icon(CupertinoIcons.chevron_forward, size: 18),
+      trailing: Icon(
+        CupertinoIcons.chevron_forward,
+        size: 18,
+        color: Theme.of(context).iconTheme.color,
+      ),
       onTap: onTap,
     );
   }

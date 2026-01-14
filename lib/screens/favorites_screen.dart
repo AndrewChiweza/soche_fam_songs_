@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -32,12 +31,40 @@ class FavoritesScreen extends StatelessWidget {
                 bottomRight: Radius.circular(24),
               ),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-              title: const Text(
-                'Favorites',
-              ),
-              centerTitle: false,
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final top = constraints.biggest.height;
+                // How collapsed the app bar is (0 = fully collapsed, 1 = fully expanded)
+                final collapseFactor =
+                    ((top - kToolbarHeight) / (140 - kToolbarHeight))
+                        .clamp(0.0, 1.0);
+
+                return Stack(
+                  children: [
+                    FlexibleSpaceBar(
+                      titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+                      title: const Text(
+                        "Favorites",
+                        style: TextStyle(letterSpacing: 1.2),
+                      ),
+                      centerTitle: false,
+                    ),
+                    // 🔹 Line under title with space and fade-out on collapse
+                    Positioned(
+                      left: 16,
+                      bottom: 12, // space between title and line
+                      child: Opacity(
+                        opacity: collapseFactor, // fades out as we scroll
+                        child: Container(
+                          width: 80, // width under the text
+                          height: 2,
+                          color: const Color(0xFFFFD700),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             actions: [
               if (favSongs.isNotEmpty)
@@ -73,71 +100,84 @@ class FavoritesScreen extends StatelessWidget {
                 ),
             ],
           ),
-          favSongs.isEmpty
-              ? SliverFillRemaining(
-                  child: Center(
-                    child: Text(
-                      'Favorite Songs will appear here!',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
-                )
-              : SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final song = favSongs[index];
-                      song.isFavorite = favProv.isFavorite(song.id);
 
-                      return GestureDetector(
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => LyricsScreen(songId: song.id),
-                          ),
-                        ),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 6,
-                                offset: Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  song.title,
-                                  style: Theme.of(context).textTheme.bodyLarge,
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  song.isFavorite
-                                      ? CupertinoIcons.heart_fill
-                                      : CupertinoIcons.heart,
-                                  color: Colors.red,
-                                ),
-                                onPressed: () =>
-                                    favProv.toggleFavorite(song.id),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: favSongs.length,
-                  ),
+          // If no favorites
+          if (favSongs.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Text(
+                  'Favorite Songs will appear here!',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
+              ),
+            )
+          else
+            // Favorite Songs List
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 12,
+              ),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) {
+                    final song = favSongs[i];
+                    song.isFavorite = favProv.isFavorite(song.id);
+
+                    return Column(
+                      children: [
+                        if (i != 0)
+                          const Divider(
+                            height: 1,
+                            indent: 0,
+                            endIndent: 0,
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: GestureDetector(
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => LyricsScreen(songId: song.id),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    song.title,
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    song.isFavorite
+                                        ? CupertinoIcons.heart_fill
+                                        : CupertinoIcons.heart,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () =>
+                                      favProv.toggleFavorite(song.id),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (i != favSongs.length - 1)
+                          const Divider(
+                            height: 1,
+                            indent: 0,
+                            endIndent: 0,
+                          ),
+                      ],
+                    );
+                  },
+                  childCount: favSongs.length,
+                ),
+              ),
+            ),
         ],
       ),
     );

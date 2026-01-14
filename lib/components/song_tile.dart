@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:soche_fam_songs/theme/app_theme.dart';
 import '../models/song.dart';
 
 class SongTile extends StatelessWidget {
@@ -19,7 +20,7 @@ class SongTile extends StatelessWidget {
         style: const TextStyle(fontSize: 18),
       ),
       trailing: Icon(CupertinoIcons.chevron_compact_right,
-          size: 16, color: Theme.of(context).secondaryHeaderColor),
+          size: 16, color: AppTheme.secondaryGreen),
     );
   }
 }

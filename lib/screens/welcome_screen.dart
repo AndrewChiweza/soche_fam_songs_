@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:soche_fam_songs/components/main_tabs.dart'; // make sure this path is correct
+import 'package:soche_fam_songs/components/main_tabs.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({Key? key}) : super(key: key);
@@ -14,7 +14,10 @@ class WelcomePage extends StatelessWidget {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF0D7840), Color(0xFF2EA371)],
+            colors: [
+              Color(0xFF0A5F34), // darker green
+              Color(0xFF0D7840), // main brand green
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -23,77 +26,90 @@ class WelcomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const Spacer(),
+
               // ---------------- WELCOME TEXT ----------------
               const Text(
                 "Welcome",
                 style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
+                  fontSize: 20,
+                  color: Colors.white70,
+                  letterSpacing: 1.2,
                 ),
               ),
-              const SizedBox(height: 50),
+
+              const SizedBox(height: 30),
 
               // ---------------- LOGO ----------------
               Container(
-                width: size.width * 0.4,
-                height: size.width * 0.4,
+                width: size.width * 0.38,
+                height: size.width * 0.38,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  // boxShadow: [
-                  //   BoxShadow(
-                  //     color: Colors.black.withOpacity(0.25),
-                  //     offset: const Offset(0, 5),
-                  //     blurRadius: 0,
-                  //   ),
-                  // ],
+                  borderRadius: BorderRadius.circular(24),
+                  color: Colors.white.withOpacity(0.05),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child:
-                      Image.asset('images/ic_launcher.png', fit: BoxFit.cover),
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.asset(
+                    'images/ic_launcher.png',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
-              const SizedBox(height: 50),
 
-              // ---------------- SOCHE FAM TITLE ----------------
-              const Text(
-                "SOCHE FUTURE ADVENTIST MEN",
-                style: TextStyle(
-                  fontSize: 30,
-                  color: Colors.white,
-                  letterSpacing: 2,
+              const SizedBox(height: 40),
+
+              // ---------------- APP TITLE ----------------
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  "SOCHE FUTURE\nADVENTIST MEN",
+                  style: TextStyle(
+                    fontSize: 28,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 70),
+
+              const Spacer(),
 
               // ---------------- GET STARTED BUTTON ----------------
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-                  backgroundColor: Colors.white,
-                  foregroundColor: Theme.of(context).primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 40),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 90,
+                      vertical: 16,
+                    ),
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF0D7840),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 4,
                   ),
-                  elevation: 5,
-                ),
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const MainTabs()), // Home page
-                  );
-                },
-                child: const Text(
-                  "Get Started",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MainTabs(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "Get Started",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.1,
+                    ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),

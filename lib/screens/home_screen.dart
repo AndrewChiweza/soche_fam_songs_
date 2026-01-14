@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import 'package:soche_fam_songs/providers/favorites_provider.dart';
 import 'package:soche_fam_songs/providers/notifications_provider.dart';
-
 import 'package:soche_fam_songs/providers/songs_provider.dart';
 
 import 'package:soche_fam_songs/screens/admin/admin_sign_in_screen.dart';
@@ -58,25 +57,50 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottomRight: Radius.circular(24),
               ),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-              title: GestureDetector(
-                onLongPress: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AdminSignInScreen(),
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final top = constraints.biggest.height;
+                // How collapsed the app bar is (0 = fully collapsed, 1 = fully expanded)
+                final collapseFactor =
+                    ((top - kToolbarHeight) / (140 - kToolbarHeight))
+                        .clamp(0.0, 1.0);
+
+                return Stack(
+                  children: [
+                    FlexibleSpaceBar(
+                      titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+                      title: GestureDetector(
+                        onLongPress: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AdminSignInScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "SOCHE FAM",
+                          style: TextStyle(letterSpacing: 1.2),
+                        ),
+                      ),
+                      centerTitle: false,
                     ),
-                  );
-                },
-                child: const Text(
-                  "SOCHE FAM",
-                  style: TextStyle(
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ),
-              centerTitle: false,
+                    // 🔹 Line under title with space and fade-out on collapse
+                    Positioned(
+                      left: 16,
+                      bottom: 12, // space between title and line
+                      child: Opacity(
+                        opacity: collapseFactor, // fades out as we scroll
+                        child: Container(
+                          width: 80, // width under the text
+                          height: 2,
+                          color: const Color(0xFFFFD700),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             actions: [
               /// 🔍 SEARCH
@@ -167,50 +191,41 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
 
-          /// 📜 SONG LIST
+          /// 📜 SONG LIST WITH SPACING AND DIVIDERS (NO CONTAINER, NO SHADOW)
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            sliver:
-                // songs.isEmpty
-                //     ? SliverFillRemaining(
-                //         child: Center(
-                //           child: Text(
-                //             '🎵\nNo Songs Found!',
-                //             textAlign: TextAlign.center,
-                //             style: Theme.of(context).textTheme.titleMedium,
-                //           ),
-                //         ),
-                //       )
-                SliverList(
+            sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, i) {
                   final song = songs[i];
 
-                  return Container(
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
+                  return Column(
+                    children: [
+                      if (i != 0)
+                        const Divider(
+                          height: 1,
+                          indent: 0,
+                          endIndent: 0,
                         ),
-                      ],
-                    ),
-                    child: SongTile(
-                      song: song,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => LyricsScreen(songId: song.id),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: SongTile(
+                          song: song,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => LyricsScreen(songId: song.id),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      if (i != songs.length - 1)
+                        const Divider(
+                          height: 1,
+                          indent: 0,
+                          endIndent: 0,
+                        ),
+                    ],
                   );
                 },
                 childCount: songs.length,
@@ -233,9 +248,27 @@ class _SongSearchDelegate extends SearchDelegate<String> {
   String? get searchFieldLabel => "Type song title or number...";
 
   @override
-  TextStyle? get searchFieldStyle => const TextStyle(
-        fontSize: 16,
-      );
+  TextStyle? get searchFieldStyle => const TextStyle(fontSize: 16);
+
+  /// 🔹 MATCH SEARCH BAR THEME
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.copyWith(
+      appBarTheme: AppBarTheme(
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        iconTheme: theme.iconTheme,
+        elevation: 0,
+        toolbarTextStyle: theme.textTheme.titleLarge,
+        titleTextStyle: theme.textTheme.titleLarge,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        fillColor: theme.cardColor,
+        filled: true,
+        hintStyle: theme.textTheme.bodyMedium,
+      ),
+    );
+  }
 
   @override
   Widget? buildLeading(BuildContext context) {
@@ -264,7 +297,15 @@ class _SongSearchDelegate extends SearchDelegate<String> {
       itemBuilder: (_, i) => ListTile(
         leading: const Icon(Icons.music_note),
         title: Text(results[i].title),
-        onTap: () => close(context, query),
+        onTap: () {
+          close(context, '');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => LyricsScreen(songId: results[i].id),
+            ),
+          );
+        },
       ),
     );
   }
@@ -279,8 +320,13 @@ class _SongSearchDelegate extends SearchDelegate<String> {
         leading: const Icon(Icons.music_note_outlined),
         title: Text(suggestions[i].title),
         onTap: () {
-          query = suggestions[i].title;
-          showResults(context);
+          close(context, '');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => LyricsScreen(songId: suggestions[i].id),
+            ),
+          );
         },
       ),
     );
