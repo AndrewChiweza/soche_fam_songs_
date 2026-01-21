@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/notification.dart';
 import '../../providers/notifications_provider.dart';
+// for consistent colors
 
 class AnnouncementFormScreen extends StatefulWidget {
   final Announcement? announcement;
@@ -28,6 +29,20 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
         TextEditingController(text: widget.announcement?.message ?? '');
   }
 
+  /// Helper to show success snackbar
+  void _showSuccessSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -42,6 +57,7 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
           createdAt: widget.announcement!.createdAt,
         ),
       );
+      _showSuccessSnackbar("Announcement updated successfully!");
     } else {
       provider.addAnnouncement(
         Announcement(
@@ -51,9 +67,13 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
           createdAt: DateTime.now(),
         ),
       );
+      _showSuccessSnackbar("Announcement added successfully!");
     }
 
-    if (context.mounted) Navigator.pop(context);
+    // Close the screen after a short delay so snackbar is visible
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (context.mounted) Navigator.pop(context);
+    });
   }
 
   @override
@@ -105,6 +125,9 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white),
                         onPressed: _save,
                         child: Text(isEditing ? "Save Changes" : "Create"),
                       ),

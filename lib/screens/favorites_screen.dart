@@ -2,12 +2,31 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:soche_fam_songs/theme/app_theme.dart';
+
 import '../../providers/favorites_provider.dart';
 import '../../providers/songs_provider.dart';
 import '../screens/lyrics_screen.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({Key? key}) : super(key: key);
+
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.green,
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +41,6 @@ class FavoritesScreen extends StatelessWidget {
           SliverAppBar(
             scrolledUnderElevation: 0.0,
             pinned: true,
-            snap: false,
-            floating: false,
             expandedHeight: 140,
             backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
             shape: const RoundedRectangleBorder(
@@ -35,29 +52,27 @@ class FavoritesScreen extends StatelessWidget {
             flexibleSpace: LayoutBuilder(
               builder: (context, constraints) {
                 final top = constraints.biggest.height;
-                // How collapsed the app bar is (0 = fully collapsed, 1 = fully expanded)
                 final collapseFactor =
                     ((top - kToolbarHeight) / (140 - kToolbarHeight))
                         .clamp(0.0, 1.0);
 
                 return Stack(
                   children: [
-                    FlexibleSpaceBar(
-                      titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-                      title: const Text(
+                    const FlexibleSpaceBar(
+                      titlePadding: EdgeInsets.only(left: 16, bottom: 16),
+                      title: Text(
                         "Favorites",
                         style: TextStyle(letterSpacing: 1.2),
                       ),
                       centerTitle: false,
                     ),
-                    // 🔹 Line under title with space and fade-out on collapse
                     Positioned(
                       left: 16,
-                      bottom: 12, // space between title and line
+                      bottom: 12,
                       child: Opacity(
-                        opacity: collapseFactor, // fades out as we scroll
+                        opacity: collapseFactor,
                         child: Container(
-                          width: 80, // width under the text
+                          width: 80,
                           height: 4,
                           color: AppTheme.primaryGreen,
                         ),
@@ -85,13 +100,20 @@ class FavoritesScreen extends StatelessWidget {
                             onPressed: () => Navigator.pop(context),
                           ),
                           TextButton(
-                            child: const Text("Clear",
-                                style: TextStyle(color: Colors.red)),
+                            child: const Text(
+                              "Clear",
+                              style: TextStyle(color: Colors.red),
+                            ),
                             onPressed: () {
                               for (var s in favSongs) {
                                 favProv.toggleFavorite(s.id);
                               }
                               Navigator.pop(context);
+
+                              _showSnackBar(
+                                context,
+                                "All favorites songs removed!",
+                              );
                             },
                           ),
                         ],
@@ -102,19 +124,19 @@ class FavoritesScreen extends StatelessWidget {
             ],
           ),
 
-          // If no favorites
+          /// NO FAVORITES
           if (favSongs.isEmpty)
             SliverFillRemaining(
               child: Center(
                 child: Text(
                   'Favorite Songs will appear here!',
-                  textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
             )
           else
-            // Favorite Songs List
+
+            /// FAVORITES LIST
             SliverPadding(
               padding: const EdgeInsets.symmetric(
                 vertical: 12,
@@ -124,18 +146,13 @@ class FavoritesScreen extends StatelessWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, i) {
                     final song = favSongs[i];
-                    song.isFavorite = favProv.isFavorite(song.id);
+                    final isFav = favProv.isFavorite(song.id);
 
                     return Column(
                       children: [
-                        if (i != 0)
-                          const Divider(
-                            height: 0.2,
-                            indent: 0,
-                            endIndent: 0,
-                          ),
+                        if (i != 0) const Divider(height: 0.2),
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           child: GestureDetector(
                             onTap: () => Navigator.of(context).push(
                               MaterialPageRoute(
@@ -143,7 +160,6 @@ class FavoritesScreen extends StatelessWidget {
                               ),
                             ),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
                                   child: Text(
@@ -154,24 +170,26 @@ class FavoritesScreen extends StatelessWidget {
                                 ),
                                 IconButton(
                                   icon: Icon(
-                                    song.isFavorite
+                                    isFav
                                         ? CupertinoIcons.heart_fill
                                         : CupertinoIcons.heart,
                                     color: Colors.red,
                                   ),
-                                  onPressed: () =>
-                                      favProv.toggleFavorite(song.id),
+                                  onPressed: () {
+                                    favProv.toggleFavorite(song.id);
+
+                                    _showSnackBar(
+                                      context,
+                                      "Song removed from favorites",
+                                    );
+                                  },
                                 ),
                               ],
                             ),
                           ),
                         ),
                         if (i != favSongs.length - 1)
-                          const Divider(
-                            height: 0.2,
-                            indent: 0,
-                            endIndent: 0,
-                          ),
+                          const Divider(height: 0.2),
                       ],
                     );
                   },

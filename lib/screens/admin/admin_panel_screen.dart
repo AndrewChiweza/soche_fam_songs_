@@ -19,6 +19,9 @@ class AdminPanelScreen extends StatefulWidget {
 }
 
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
+  bool _registrationOpen = true; // Default
+  bool _loadingRegStatus = true;
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +30,61 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       Future.microtask(() {
         Navigator.pushReplacementNamed(context, '/admin-sign-in');
       });
+    }
+    _loadRegistrationStatus();
+  }
+
+  Future<void> _loadRegistrationStatus() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('settings')
+        .doc('app')
+        .get();
+    if (doc.exists) {
+      setState(() {
+        _registrationOpen = doc.data()?['registrationOpen'] ?? true;
+        _loadingRegStatus = false;
+      });
+    } else {
+      // Create default if missing
+      await FirebaseFirestore.instance
+          .collection('settings')
+          .doc('app')
+          .set({'registrationOpen': true});
+      setState(() => _loadingRegStatus = false);
+    }
+  }
+
+  Future<void> _toggleRegistration(bool value) async {
+    setState(() => _registrationOpen = value);
+    try {
+      await FirebaseFirestore.instance
+          .collection('settings')
+          .doc('app')
+          .update({'registrationOpen': value});
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: Text(
+            value ? "Registration Enabled" : "Registration Disabled",
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: value ? Colors.green : Colors.red,
+        ),
+      );
+    } catch (e) {
+      setState(() => _registrationOpen = !value); // rollback
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Failed to update registration",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -54,7 +112,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             actions: [
               CircleAvatar(
                 backgroundColor: Theme.of(context).primaryColor,
-                child: Text(initials, style: TextStyle(color: Colors.white)),
+                child:
+                    Text(initials, style: const TextStyle(color: Colors.white)),
               ),
               const SizedBox(width: 12),
               IconButton(
@@ -62,7 +121,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 onPressed: () async {
                   await FirebaseAuth.instance.signOut();
                   final box = Hive.box("AppPrefs");
-                  await box.put("admin_logged_in", false); // ✅ Clear login flag
+                  await box.put("admin_logged_in", false);
                   Navigator.pushNamedAndRemoveUntil(
                       context, '/', (route) => false);
                 },
@@ -115,14 +174,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     page: AdminSongsScreen(),
                     suffix: "songs",
                   ),
-                  _gap(),
+                  const SizedBox(height: 14),
                   _simpleTile(
                     context,
                     icon: CupertinoIcons.bell_fill,
                     title: "Announcements",
                     page: const AdminAnnouncementsScreen(),
                   ),
-                  _gap(),
+                  const SizedBox(height: 14),
                   _statsTile(
                     context,
                     stream: FirebaseFirestore.instance
@@ -133,7 +192,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     page: const AdminMembersScreen(),
                     suffix: "members",
                   ),
-                  _gap(),
+                  const SizedBox(height: 14),
                   _statsTile(
                     context,
                     stream: FirebaseFirestore.instance
@@ -144,6 +203,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     page: const AdminManageAdminsScreen(),
                     suffix: "admins",
                   ),
+                  const SizedBox(height: 14),
+
+                  // ─── Registration Control ───
+                  _loadingRegStatus
+                      ? Center(child: CircularProgressIndicator())
+                      : _registrationTile(),
                 ],
               ),
             ),
@@ -153,9 +218,62 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 
-  // ───────────────────────── WIDGETS ─────────────────────────
-
-  Widget _gap() => const SizedBox(height: 14);
+  Widget _registrationTile() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(CupertinoIcons.person_crop_circle_badge_plus,
+                size: 26),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Member Registration",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _registrationOpen ? "Open" : "Closed",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _registrationOpen ? Colors.green : Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: _registrationOpen,
+            onChanged: _toggleRegistration,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _statsTile(
     BuildContext context, {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:soche_fam_songs/models/member.dart';
 import 'package:soche_fam_songs/services/firestore_service.dart';
 import 'package:soche_fam_songs/screens/registration_form_screen.dart';
+import '../../theme/app_theme.dart'; // For consistent colors
 
 class MemberDetailsScreen extends StatelessWidget {
   final Member member;
@@ -19,17 +20,16 @@ class MemberDetailsScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(CupertinoIcons.chevron_left),
           onPressed: () {
-            // This button navigates back to the previous screen
             Navigator.of(context).pop();
           },
-          // Optional: customize the color
         ),
         title: Text(member.name),
         actions: [
           IconButton(
             icon: const Icon(CupertinoIcons.pencil),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              // Navigate to edit screen and wait for result
+              final result = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(
                   builder: (_) => MemberRegistrationScreen(
@@ -37,13 +37,15 @@ class MemberDetailsScreen extends StatelessWidget {
                   ),
                 ),
               );
+
+              if (result == true) {
+                _showSnackbar(context, "Member updated successfully!", true);
+              }
             },
           ),
           IconButton(
             icon: const Icon(CupertinoIcons.delete),
-            onPressed: () {
-              _confirmDelete(context, firestore);
-            },
+            onPressed: () => _confirmDelete(context, firestore),
           ),
         ],
       ),
@@ -94,6 +96,22 @@ class MemberDetailsScreen extends StatelessWidget {
     );
   }
 
+  void _showSnackbar(BuildContext context, String message, bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: success ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   void _confirmDelete(BuildContext context, FirestoreService firestore) {
     showDialog(
       context: context,
@@ -102,16 +120,23 @@ class MemberDetailsScreen extends StatelessWidget {
         content: const Text('This action cannot be undone.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () async {
-              await firestore.deleteMember(member.id);
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Go back to list
+              try {
+                await firestore.deleteMember(member.id);
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context); // Go back to list
+                _showSnackbar(context, "Member deleted successfully!", true);
+              } catch (e) {
+                Navigator.pop(context); // Close dialog
+                _showSnackbar(context, "Failed to delete member", false);
+              }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          )
+          ),
         ],
       ),
     );

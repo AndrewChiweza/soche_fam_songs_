@@ -100,7 +100,7 @@ class _MainTabsState extends State<MainTabs> {
             ),
           ),
           BottomNavigationBarItem(
-            label: 'About',
+            label: 'Info',
             icon: Column(
               children: [
                 Container(

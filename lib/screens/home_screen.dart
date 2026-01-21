@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Icon(Icons.person_add_outlined),
                         SizedBox(width: 8),
-                        Text("Register"),
+                        Text("Be a Member"),
                       ],
                     ),
                   ),

@@ -15,6 +15,21 @@ class FirestoreService {
     await _db.collection("members").add(member.toMap());
   }
 
+  /// ✅ CHECK IF EMAIL ALREADY EXISTS (PREVENT DUPLICATES)
+  Future<bool> emailExists(String email, {String? excludeId}) async {
+    final query =
+        await _db.collection("members").where("email", isEqualTo: email).get();
+
+    if (query.docs.isEmpty) return false;
+
+    // When editing, ignore the current member
+    if (excludeId != null) {
+      return query.docs.any((doc) => doc.id != excludeId);
+    }
+
+    return true;
+  }
+
   Stream<List<Member>> getMembers() {
     return _db
         .collection("members")
@@ -76,8 +91,6 @@ class FirestoreService {
   // ANNOUNCEMENTS CRUD
   // ==========================
 
-  // ANNOUNCEMENTS CRUD ----------------------------------
-
   Future<void> createAnnouncement(Announcement ann) async {
     await _db.collection('announcements').add(ann.toMap());
   }
@@ -122,5 +135,22 @@ class FirestoreService {
 
   Future<void> deleteAdmin(String id) async {
     await _db.collection("admins").doc(id).delete();
+  }
+
+  /// REGISTRATION STATUS STREAM
+  Stream<bool> registrationOpenStream() {
+    return FirebaseFirestore.instance
+        .collection('settings')
+        .doc('app')
+        .snapshots()
+        .map((doc) => doc.data()?['registrationOpen'] ?? true);
+  }
+
+  /// UPDATE REGISTRATION STATUS (ADMIN)
+  Future<void> setRegistrationOpen(bool value) async {
+    await FirebaseFirestore.instance
+        .collection('settings')
+        .doc('app')
+        .set({'registrationOpen': value}, SetOptions(merge: true));
   }
 }

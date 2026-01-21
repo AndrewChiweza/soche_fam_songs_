@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -43,8 +45,20 @@ class AdminAnnouncementsScreen extends StatelessWidget {
     if (confirm == true) {
       context.read<AnnouncementsProvider>().removeAnnouncement(ann.id);
 
+      // ✅ Modern floating snackbar
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Announcement deleted")),
+        SnackBar(
+          content: Text(
+            "Announcement deleted successfully!",
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 2),
+        ),
       );
     }
   }
@@ -68,7 +82,10 @@ class AdminAnnouncementsScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add),
-        label: const Text("New"),
+        label: const Text(
+          "New",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         onPressed: () {
           Navigator.push(
             context,

@@ -16,7 +16,7 @@ class WelcomePage extends StatelessWidget {
           gradient: LinearGradient(
             colors: [
               Color(0xFF0A5F34), // darker green
-              Color(0xFF0D7840), // main brand green
+              Color(0xFF00674F), // main brand green
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,

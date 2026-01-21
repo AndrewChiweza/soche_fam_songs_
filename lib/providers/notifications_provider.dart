@@ -121,4 +121,9 @@ class AnnouncementsProvider with ChangeNotifier {
   Future<void> removeAnnouncement(String id) async {
     return deleteAnnouncement(id);
   }
+
+  void deleteById(String id) {
+    _items.removeWhere((item) => item.id == id);
+    notifyListeners();
+  }
 }

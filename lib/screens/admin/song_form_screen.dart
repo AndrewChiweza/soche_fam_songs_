@@ -48,6 +48,20 @@ class _SongFormScreenState extends State<SongFormScreen> {
     );
   }
 
+  /// Helper method for showing success snackbars
+  void _showSuccessSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Future<void> _saveSong() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -60,17 +74,16 @@ class _SongFormScreenState extends State<SongFormScreen> {
 
     if (isEditing) {
       await _firestore.updateSong(songId!, song);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Song updated")),
-      );
+      _showSuccessSnackbar("Song updated successfully!");
     } else {
       await _firestore.addSong(song);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Song added")),
-      );
+      _showSuccessSnackbar("Song added successfully!");
     }
 
-    Navigator.pop(context);
+    // Close the screen after showing the snackbar
+    Future.delayed(const Duration(milliseconds: 500), () {
+      Navigator.pop(context);
+    });
   }
 
   @override

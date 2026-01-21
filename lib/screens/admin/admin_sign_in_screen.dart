@@ -47,7 +47,7 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
               children: [
                 /// LOGO or ICON
                 Icon(Icons.admin_panel_settings,
-                    size: 90, color: Theme.of(context).iconTheme.color),
+                    size: 90, color: Theme.of(context).secondaryHeaderColor),
                 const SizedBox(height: 25),
 
                 /// Title
@@ -55,7 +55,8 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
                   "Welcome Admin",
                   style: const TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF00674F),
                   ),
                 ),
                 const SizedBox(height: 30),
@@ -128,12 +129,19 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
                             final box = Hive.box("AppPrefs");
                             await box.put("admin_logged_in", true);
 
-                            // Navigate to admin panel
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const AdminPanelScreen()),
-                            );
+                            // ✅ Show success snackbar
+                            AppSnackBar.showSuccess(
+                                context, "Logged in successfully!");
+
+                            // Navigate to admin panel after a short delay so snackbar is visible
+                            Future.delayed(const Duration(milliseconds: 500),
+                                () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const AdminPanelScreen()),
+                              );
+                            });
                           },
                           child: const Text(
                             "Sign In",

@@ -5,7 +5,7 @@ class AppTheme {
   // ------------------ COLORS ------------------
   // Primary: Main brand color
   static const Color primaryGreen =
-      Color(0xFF0D7840); // Slightly brighter & softer
+      Color(0xFF00674F); // Slightly brighter & softer
 
   // Secondary: Complementary color for accents/buttons
   static const Color secondaryGreen =

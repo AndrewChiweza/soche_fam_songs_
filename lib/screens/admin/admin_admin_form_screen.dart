@@ -32,6 +32,24 @@ class _AdminAdminFormScreenState extends State<AdminAdminFormScreen> {
     }
   }
 
+  void _showSnackBar(String message, bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: success ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.read<AdminsProvider>();
@@ -43,27 +61,18 @@ class _AdminAdminFormScreenState extends State<AdminAdminFormScreen> {
       );
     }
 
-    // Can edit if super admin OR editing own profile
     final canEdit = current.isSuperAdmin || widget.admin?.id == current.id;
 
-    // Show password field if:
-    // 1. Creating a new admin (only super admin)
-    // 2. Editing own profile (regular admin)
-    // 3. Super admin editing any admin
     final showPasswordField = (!isEditing && current.isSuperAdmin) ||
         (isEditing && (current.isSuperAdmin || widget.admin?.id == current.id));
 
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(CupertinoIcons.chevron_left),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(isEditing ? "Edit Admin" : "Add Admin"),
-        backgroundColor: theme.appBarTheme.backgroundColor,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -72,62 +81,57 @@ class _AdminAdminFormScreenState extends State<AdminAdminFormScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          color: theme.cardColor,
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Form(
               key: _formKey,
               child: Column(
                 children: [
-                  // Full Name
+                  // NAME
                   TextFormField(
                     controller: nameCtrl,
                     decoration: const InputDecoration(
                       labelText: "Full Name",
                       prefixIcon: Icon(Icons.person),
                     ),
-                    style: TextStyle(color: theme.textTheme.bodyMedium?.color),
                     validator: (v) => v!.isEmpty ? "Required" : null,
                     enabled: canEdit,
                   ),
                   const SizedBox(height: 16),
 
-                  // Email
+                  // EMAIL
                   TextFormField(
                     controller: emailCtrl,
                     decoration: const InputDecoration(
                       labelText: "Email",
                       prefixIcon: Icon(Icons.email),
                     ),
-                    style: TextStyle(color: theme.textTheme.bodyMedium?.color),
                     validator: (v) => v!.isEmpty ? "Required" : null,
                     enabled: canEdit,
                   ),
                   const SizedBox(height: 16),
 
-                  // Password field
+                  // PASSWORD
                   if (showPasswordField)
                     TextFormField(
                       controller: passwordCtrl,
+                      obscureText: true,
                       decoration: InputDecoration(
                         labelText: isEditing
                             ? "New Password (leave empty to keep current)"
                             : "Password",
                         prefixIcon: const Icon(Icons.lock),
                       ),
-                      obscureText: true,
-                      style:
-                          TextStyle(color: theme.textTheme.bodyMedium?.color),
                       validator: (v) {
                         if (!isEditing && (v == null || v.isEmpty)) {
-                          return "Password is required for new admin";
+                          return "Password required";
                         }
                         return null;
                       },
                     ),
                   if (showPasswordField) const SizedBox(height: 16),
 
-                  // Super Admin switch
+                  // SUPER ADMIN SWITCH
                   if (current.isSuperAdmin)
                     SwitchListTile(
                       title: const Text("Super Admin"),
@@ -135,59 +139,15 @@ class _AdminAdminFormScreenState extends State<AdminAdminFormScreen> {
                       onChanged: (v) => setState(() => isSuperAdmin = v),
                     ),
 
-                  // Delete button (for super admin)
-                  if (isEditing && current.isSuperAdmin)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: TextButton(
-                        onPressed: () async {
-                          final confirm = await showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: const Text("Delete Admin"),
-                              content: const Text(
-                                  "Are you sure you want to delete this admin?"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, false),
-                                  child: const Text("Cancel"),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red),
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: const Text("Delete"),
-                                ),
-                              ],
-                            ),
-                          );
-
-                          if (confirm == true) {
-                            await provider.deleteAdmin(widget.admin!.id);
-                            if (mounted) Navigator.pop(context);
-                          }
-                        },
-                        child: const Text(
-                          "Delete Admin",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ),
-
                   const SizedBox(height: 24),
 
-                  // Create/Update button
+                  // SUBMIT BUTTON
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.primaryColor,
+                        backgroundColor: Theme.of(context).primaryColor,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
                       ),
                       onPressed: canEdit
                           ? () async {
@@ -202,26 +162,41 @@ class _AdminAdminFormScreenState extends State<AdminAdminFormScreen> {
                                     widget.admin?.createdAt ?? DateTime.now(),
                               );
 
-                              // Only pass password if non-empty
-                              final password = passwordCtrl.text.trim().isEmpty
-                                  ? null
-                                  : passwordCtrl.text.trim();
+                              final newPassword =
+                                  passwordCtrl.text.trim().isEmpty
+                                      ? null
+                                      : passwordCtrl.text.trim();
+
+                              String? result;
 
                               if (isEditing) {
-                                await provider.updateAdmin(admin,
-                                    newPassword: password);
+                                result = await provider.updateAdmin(
+                                  admin,
+                                  newPassword: newPassword,
+                                );
                               } else {
-                                await provider.createAdmin(
-                                    admin, passwordCtrl.text.trim());
+                                result = await provider.createAdmin(
+                                  admin,
+                                  passwordCtrl.text.trim(),
+                                );
                               }
 
-                              if (mounted) Navigator.pop(context);
+                              if (!mounted) return;
+
+                              if (result == null) {
+                                _showSnackBar(
+                                  isEditing
+                                      ? "Admin updated successfully"
+                                      : "Admin created successfully",
+                                  true,
+                                );
+                                Navigator.pop(context);
+                              } else {
+                                _showSnackBar(result, false);
+                              }
                             }
                           : null,
-                      child: Text(
-                        isEditing ? "Update Admin" : "Create Admin",
-                        style: const TextStyle(fontSize: 16),
-                      ),
+                      child: Text(isEditing ? "Update Admin" : "Create Admin"),
                     ),
                   ),
                 ],
