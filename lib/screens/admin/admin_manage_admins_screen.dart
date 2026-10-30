@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:soche_fam_songs/components/app_snack_bar.dart'; // Ensure correct import path for your AppSnackBar
 import '../../providers/admins_provider.dart';
 import '../../models/admin_user.dart';
 import 'admin_admin_form_screen.dart';
@@ -23,16 +24,20 @@ class AdminManageAdminsScreen extends StatelessWidget {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AdminAdminFormScreen()),
-          );
-        },
-        backgroundColor: Theme.of(context).cardColor,
-        child: const Icon(CupertinoIcons.person_add),
-      ),
+      // Only show the FloatingActionButton to add admins if the user is the Club Chair
+      floatingActionButton: provider.currentAdmin?.isChair == true
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const AdminAdminFormScreen()),
+                );
+              },
+              backgroundColor: Theme.of(context).cardColor,
+              child: const Icon(CupertinoIcons.person_add),
+            )
+          : null,
       body: StreamBuilder<List<AdminUser>>(
         stream: provider.streamAdmins(),
         builder: (context, snapshot) {
@@ -64,7 +69,8 @@ class AdminManageAdminsScreen extends StatelessWidget {
             itemBuilder: (_, i) {
               final admin = admins[i];
 
-              final canEdit = current.isSuperAdmin || admin.id == current.id;
+              // Club Chair can edit anyone, other admins can only click to edit their own profile
+              final canEdit = current.isChair || admin.id == current.id;
 
               return Card(
                 elevation: 3,
@@ -76,31 +82,87 @@ class AdminManageAdminsScreen extends StatelessWidget {
                   enabled: canEdit,
                   title: Text(
                     admin.name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   subtitle: Text(
                     admin.email,
                   ),
-                  trailing: admin.isSuperAdmin
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.orangeAccent,
-                            borderRadius: BorderRadius.circular(8),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Dynamic Status/Role Chip
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: admin.isChair
+                              ? Colors.amber.shade800
+                              : admin.isMusicDirector
+                                  ? Colors.blue.shade700
+                                  : Colors.teal.shade700,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          admin.isChair
+                              ? "Chair"
+                              : admin.isMusicDirector
+                                  ? "Music"
+                                  : "Treasurer",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
                           ),
-                          child: const Text(
-                            "Super Admin",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        )
-                      : null,
+                        ),
+                      ),
+
+                      // Super-Admin (Chair) deletion interface option
+                      if (current.isChair && admin.id != current.id) ...[
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(CupertinoIcons.trash,
+                              color: Colors.redAccent),
+                          onPressed: () async {
+                            final confirmDelete = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text("Remove Admin"),
+                                content: Text(
+                                    "Are you sure you want to delete ${admin.name} from the administrator registry?"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text(
+                                      "Delete",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirmDelete == true) {
+                              final error = await context
+                                  .read<AdminsProvider>()
+                                  .deleteAdmin(admin.id);
+                              if (error != null) {
+                                AppSnackBar.showError(context, error);
+                              } else {
+                                AppSnackBar.showSuccess(context,
+                                    "Admin profile removed successfully.");
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
                   onTap: canEdit
                       ? () {
                           Navigator.push(

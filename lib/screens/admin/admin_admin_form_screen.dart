@@ -18,7 +18,8 @@ class _AdminAdminFormScreenState extends State<AdminAdminFormScreen> {
   final emailCtrl = TextEditingController();
   final passwordCtrl = TextEditingController();
 
-  bool isSuperAdmin = false;
+  String assignedRole =
+      'music_director'; // Defaults to standard operational access
   bool isEditing = false;
 
   @override
@@ -28,7 +29,7 @@ class _AdminAdminFormScreenState extends State<AdminAdminFormScreen> {
       isEditing = true;
       nameCtrl.text = widget.admin!.name;
       emailCtrl.text = widget.admin!.email;
-      isSuperAdmin = widget.admin!.isSuperAdmin;
+      assignedRole = widget.admin!.role;
     }
   }
 
@@ -61,10 +62,12 @@ class _AdminAdminFormScreenState extends State<AdminAdminFormScreen> {
       );
     }
 
-    final canEdit = current.isSuperAdmin || widget.admin?.id == current.id;
+    // Only the Club Chair (Super Admin) or the owner of the profile can edit these fields
+    final canEdit = current.isChair || widget.admin?.id == current.id;
 
-    final showPasswordField = (!isEditing && current.isSuperAdmin) ||
-        (isEditing && (current.isSuperAdmin || widget.admin?.id == current.id));
+    // Control password modification field visibility dynamically
+    final showPasswordField = (!isEditing && current.isChair) ||
+        (isEditing && (current.isChair || widget.admin?.id == current.id));
 
     return Scaffold(
       appBar: AppBar(
@@ -131,12 +134,40 @@ class _AdminAdminFormScreenState extends State<AdminAdminFormScreen> {
                     ),
                   if (showPasswordField) const SizedBox(height: 16),
 
-                  // SUPER ADMIN SWITCH
-                  if (current.isSuperAdmin)
-                    SwitchListTile(
-                      title: const Text("Super Admin"),
-                      value: isSuperAdmin,
-                      onChanged: (v) => setState(() => isSuperAdmin = v),
+                  // ROLE-BASED ACCESS CONTROL DROPDOWN
+                  if (current.isChair)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButtonFormField<String>(
+                        value: assignedRole,
+                        decoration: const InputDecoration(
+                          labelText: "Admin Operational Role",
+                          border: InputBorder.none,
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'chair',
+                            child: Text('Club Chair (Super-Admin)'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'music_director',
+                            child: Text('Music Director'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'treasurer',
+                            child: Text('Treasurer'),
+                          ),
+                        ],
+                        onChanged: (newRole) {
+                          if (newRole != null) {
+                            setState(() => assignedRole = newRole);
+                          }
+                        },
+                      ),
                     ),
 
                   const SizedBox(height: 24),
@@ -157,7 +188,7 @@ class _AdminAdminFormScreenState extends State<AdminAdminFormScreen> {
                                 id: widget.admin?.id ?? "",
                                 name: nameCtrl.text.trim(),
                                 email: emailCtrl.text.trim(),
-                                isSuperAdmin: isSuperAdmin,
+                                role: assignedRole, // Updated field
                                 createdAt:
                                     widget.admin?.createdAt ?? DateTime.now(),
                               );

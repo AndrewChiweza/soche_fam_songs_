@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:soche_fam_songs/screens/admin_payments_dashboard.dart';
 
 import '../../providers/admins_provider.dart';
 import 'admin_songs_screen.dart';
 import 'admin_announcements_screen.dart';
 import 'admin_members_screen.dart';
 import 'admin_manage_admins_screen.dart';
+import 'admin_admin_form_screen.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -19,7 +21,7 @@ class AdminPanelScreen extends StatefulWidget {
 }
 
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
-  bool _registrationOpen = true; // Default
+  bool _registrationOpen = true;
   bool _loadingRegStatus = true;
 
   @override
@@ -45,7 +47,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         _loadingRegStatus = false;
       });
     } else {
-      // Create default if missing
       await FirebaseFirestore.instance
           .collection('settings')
           .doc('app')
@@ -64,160 +65,71 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           content: Text(
-            value ? "Registration Enabled" : "Registration Disabled",
-            style: const TextStyle(color: Colors.white),
-          ),
+              value ? "Registration Enabled" : "Registration Disabled",
+              style: const TextStyle(color: Colors.white)),
           backgroundColor: value ? Colors.green : Colors.red,
         ),
       );
     } catch (e) {
-      setState(() => _registrationOpen = !value); // rollback
+      setState(() => _registrationOpen = !value);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            "Failed to update registration",
-            style: TextStyle(color: Colors.white),
-          ),
+          content: Text("Failed to update registration",
+              style: TextStyle(color: Colors.white)),
           backgroundColor: Colors.red,
         ),
       );
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final admin = context.watch<AdminsProvider>().currentAdmin;
-
-    String initials = '';
-    if (admin != null && admin.name.isNotEmpty) {
-      final parts = admin.name.split(' ');
-      initials = parts.take(2).map((e) => e[0]).join().toUpperCase();
-    }
-
-    return Scaffold(
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          /// 🔰 SLIVER APP BAR
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 120,
-            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-            automaticallyImplyLeading: false,
-            title: const Text("Admin Panel"),
-            actions: [
-              CircleAvatar(
-                backgroundColor: Theme.of(context).primaryColor,
-                child:
-                    Text(initials, style: const TextStyle(color: Colors.white)),
-              ),
-              const SizedBox(width: 12),
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                  final box = Hive.box("AppPrefs");
-                  await box.put("admin_logged_in", false);
-                  Navigator.pushNamedAndRemoveUntil(
-                      context, '/', (route) => false);
-                },
-              ),
-            ],
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-            ),
-          ),
-
-          /// 👋 HEADER
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Welcome back 👋",
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    admin?.name ?? "Administrator",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          /// 📊 DASHBOARD
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate(
-                [
-                  _statsTile(
-                    context,
-                    stream: FirebaseFirestore.instance
-                        .collection("songs")
-                        .snapshots(),
-                    icon: CupertinoIcons.music_note_list,
-                    title: "Manage Songs",
-                    page: AdminSongsScreen(),
-                    suffix: "songs",
-                  ),
-                  const SizedBox(height: 14),
-                  _simpleTile(
-                    context,
-                    icon: CupertinoIcons.bell_fill,
-                    title: "Announcements",
-                    page: const AdminAnnouncementsScreen(),
-                  ),
-                  const SizedBox(height: 14),
-                  _statsTile(
-                    context,
-                    stream: FirebaseFirestore.instance
-                        .collection("members")
-                        .snapshots(),
-                    icon: CupertinoIcons.group_solid,
-                    title: "Registered Members",
-                    page: const AdminMembersScreen(),
-                    suffix: "members",
-                  ),
-                  const SizedBox(height: 14),
-                  _statsTile(
-                    context,
-                    stream: FirebaseFirestore.instance
-                        .collection("admins")
-                        .snapshots(),
-                    icon: CupertinoIcons.settings_solid,
-                    title: "Manage Admins",
-                    page: const AdminManageAdminsScreen(),
-                    suffix: "admins",
-                  ),
-                  const SizedBox(height: 14),
-
-                  // ─── Registration Control ───
-                  _loadingRegStatus
-                      ? Center(child: CircularProgressIndicator())
-                      : _registrationTile(),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+  /// 📊 Inner Tile Component Helper for Firestore metrics tracking streams
+  Widget _statsTile(BuildContext context,
+      {required Stream<QuerySnapshot> stream,
+      required IconData icon,
+      required String title,
+      required Widget page,
+      required String suffix}) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: stream,
+      builder: (context, snapshot) {
+        String total = "...";
+        if (snapshot.hasData) {
+          total = snapshot.data!.docs.length.toString();
+        }
+        return ListTile(
+          tileColor: Theme.of(context).cardColor,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          leading: Icon(icon, color: Theme.of(context).primaryColor),
+          title:
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text("$total $suffix stored"),
+          trailing: const Icon(CupertinoIcons.chevron_right, size: 18),
+          onTap: () => Navigator.push(
+              context, MaterialPageRoute(builder: (BuildContext ctx) => page)),
+        );
+      },
     );
   }
 
+  /// 📢 Inner Simple Navigation Tile Component Helper
+  Widget _simpleTile(BuildContext context,
+      {required IconData icon, required String title, required Widget page}) {
+    return ListTile(
+      tileColor: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      leading: Icon(icon, color: Theme.of(context).primaryColor),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      trailing: const Icon(CupertinoIcons.chevron_right, size: 18),
+      onTap: () => Navigator.push(
+          context, MaterialPageRoute(builder: (BuildContext ctx) => page)),
+    );
+  }
+
+  /// ⚙️ Intake management tile
   Widget _registrationTile() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -248,133 +160,215 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Member Registration",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
+                const Text("Membership Intake",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 Text(
-                  _registrationOpen ? "Open" : "Closed",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: _registrationOpen ? Colors.green : Colors.red,
-                  ),
-                ),
+                    _registrationOpen
+                        ? "Open to public entries"
+                        : "Intake locked",
+                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
               ],
             ),
           ),
-          Switch(
+          CupertinoSwitch(
             value: _registrationOpen,
-            onChanged: _toggleRegistration,
+            activeColor: const Color(0xFF00674F),
+            onChanged: (v) => _toggleRegistration(v),
           ),
         ],
       ),
     );
   }
 
-  Widget _statsTile(
-    BuildContext context, {
-    required Stream<QuerySnapshot> stream,
-    required IconData icon,
-    required String title,
-    required Widget page,
-    required String suffix,
-  }) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: stream,
-      builder: (_, snapshot) {
-        final count = snapshot.data?.docs.length ?? 0;
-        return _cardTile(
-          context,
-          icon: icon,
-          title: title,
-          subtitle: "$count $suffix",
-          page: page,
-        );
-      },
-    );
-  }
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<AdminsProvider>();
+    final admin = provider.currentAdmin;
 
-  Widget _simpleTile(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required Widget page,
-  }) {
-    return _cardTile(
-      context,
-      icon: icon,
-      title: title,
-      subtitle: "View & manage",
-      page: page,
-    );
-  }
+    String initials = '';
+    String displayRole = 'Admin';
+    if (admin != null && admin.name.isNotEmpty) {
+      final parts = admin.name.split(' ');
+      initials = parts
+          .take(2)
+          .map((e) => e.isNotEmpty ? e[0] : '')
+          .join()
+          .toUpperCase();
 
-  Widget _cardTile(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Widget page,
-  }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => page),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.12),
-                shape: BoxShape.circle,
+      if (admin.isChair) displayRole = "Club Chair (Super-Admin)";
+      if (admin.isMusicDirector) displayRole = "Music Director";
+      if (admin.isTreasurer) displayRole = "Treasurer";
+    }
+
+    return Scaffold(
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: 120,
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+            automaticallyImplyLeading: false,
+            title: const Text("Dashboard"),
+            actions: [
+              GestureDetector(
+                onTap: () {
+                  if (admin != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext ctx) =>
+                              AdminAdminFormScreen(admin: admin)),
+                    );
+                  }
+                },
+                child: CircleAvatar(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  child: Text(initials,
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
               ),
-              child: Icon(icon, size: 26),
+              const SizedBox(width: 12),
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () async {
+                  await provider.signOut();
+                  final box = Hive.box("AppPrefs");
+                  await box.put("admin_logged_in", false);
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, '/', (route) => false);
+                },
+              ),
+            ],
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text("Welcome👋",
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 4),
                   Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    admin?.name ?? "Administrator",
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
+                  const SizedBox(height: 4),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      displayRole,
+                      style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right),
-          ],
-        ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate(
+                [
+                  /// 🎵 MANAGE SONGS (Chair & Music Director Only)
+                  if (admin != null &&
+                      (admin.isChair || admin.isMusicDirector)) ...[
+                    _statsTile(
+                      context,
+                      stream: FirebaseFirestore.instance
+                          .collection("songs")
+                          .snapshots(),
+                      icon: CupertinoIcons.music_note_list,
+                      title: "Manage Songs",
+                      page: AdminSongsScreen(),
+                      suffix: "songs",
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  /// 📢 ANNOUNCEMENTS (Everyone has access)
+                  _simpleTile(
+                    context,
+                    icon: CupertinoIcons.bell_fill,
+                    title: "Announcements",
+                    page: const AdminAnnouncementsScreen(),
+                  ),
+                  const SizedBox(height: 14),
+
+                  /// 💳 PAYMENTS PANEL (Chair & Treasurer Only)
+                  if (admin != null &&
+                      (admin.isChair || admin.isTreasurer)) ...[
+                    _statsTile(
+                      context,
+                      stream: FirebaseFirestore.instance
+                          .collection("payment_dues")
+                          .snapshots(),
+                      icon: CupertinoIcons.creditcard_fill,
+                      title: "Payments Panel",
+                      page: const AdminPaymentsDashboard(),
+                      suffix: "dues",
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  /// 👥 REGISTERED MEMBERS (Chair Only)
+                  if (admin != null && admin.isChair) ...[
+                    _statsTile(
+                      context,
+                      stream: FirebaseFirestore.instance
+                          .collection("members")
+                          .snapshots(),
+                      icon: CupertinoIcons.group_solid,
+                      title: "Registered Members",
+                      page: const AdminMembersScreen(),
+                      suffix: "members",
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  /// ⚙️ MANAGE ADMINS (Everyone can open list, controls inside protect fields)
+                  _statsTile(
+                    context,
+                    stream: FirebaseFirestore.instance
+                        .collection("admins")
+                        .snapshots(),
+                    icon: CupertinoIcons.settings_solid,
+                    title: "Manage Admins",
+                    page: const AdminManageAdminsScreen(),
+                    suffix: "admins",
+                  ),
+                  const SizedBox(height: 14),
+
+                  /// ─── Registration Open Gate Control (Chair Only) ───
+                  if (admin != null && admin.isChair)
+                    _loadingRegStatus
+                        ? const Center(child: CircularProgressIndicator())
+                        : _registrationTile(),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -7,6 +7,28 @@ import 'package:soche_fam_songs/theme/app_theme.dart';
 import '../../providers/admins_provider.dart';
 import 'admin_panel_screen.dart';
 
+/// Maps confusing technical Firebase errors to friendly human-readable alerts
+String getHumanReadableAuthError(String rawError) {
+  final lowercaseError = rawError.toLowerCase();
+
+  if (lowercaseError.contains('invalid-credential') ||
+      lowercaseError.contains('wrong-password') ||
+      lowercaseError.contains('user-not-found')) {
+    return 'Incorrect password or email. Please check your credentials and try again.';
+  } else if (lowercaseError.contains('invalid-email')) {
+    return 'Please enter a valid email address structure.';
+  } else if (lowercaseError.contains('user-disabled')) {
+    return 'This administrator account has been disabled by the Super-Admin.';
+  } else if (lowercaseError.contains('network-request-failed')) {
+    return 'Network connection error. Please check your internet connection and try again.';
+  } else if (lowercaseError.contains('too-many-requests')) {
+    return 'Too many failed login attempts. This account has been temporarily locked.';
+  }
+
+  // Falls back to the original message if it's already structured cleanly
+  return rawError;
+}
+
 class AdminSignInScreen extends StatefulWidget {
   const AdminSignInScreen({Key? key}) : super(key: key);
 
@@ -25,7 +47,6 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<AdminsProvider>();
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
@@ -51,9 +72,9 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
                 const SizedBox(height: 25),
 
                 /// Title
-                Text(
+                const Text(
                   "Welcome Admin",
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF00674F),
@@ -69,7 +90,6 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
                   validatorMsg: "Enter your email",
                   keyboardType: TextInputType.emailAddress,
                 ),
-
                 const SizedBox(height: 20),
 
                 /// PASSWORD FIELD
@@ -91,7 +111,43 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                /// FORGOT PASSWORD TRIGGER LINK
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: TextButton(
+                      onPressed: () async {
+                        if (emailCtrl.text.trim().isEmpty) {
+                          AppSnackBar.showError(context,
+                              "Please input your email address above to receive a recovery link.");
+                          return;
+                        }
+                        setState(() => loading = true);
+                        // Trigger via provider reset routine
+                        final resetError = await provider
+                            .sendForgotPasswordEmail(emailCtrl.text.trim());
+                        setState(() => loading = false);
+
+                        if (resetError != null) {
+                          AppSnackBar.showError(
+                              context, getHumanReadableAuthError(resetError));
+                        } else {
+                          AppSnackBar.showSuccess(context,
+                              "Password recovery link sent successfully! Check your inbox.");
+                        }
+                      },
+                      child: const Text(
+                        "Forgot Password?",
+                        style: TextStyle(
+                          color: Color(0xFF00674F),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
 
                 /// SIGN IN BUTTON
                 loading
@@ -117,14 +173,13 @@ class _AdminSignInScreenState extends State<AdminSignInScreen> {
                               emailCtrl.text.trim(),
                               passwordCtrl.text.trim(),
                             );
-
                             setState(() => loading = false);
-
                             if (error != null) {
-                              AppSnackBar.showError(context, error);
+                              // Processing error through clean formatting humanizer mapping
+                              AppSnackBar.showError(
+                                  context, getHumanReadableAuthError(error));
                               return;
                             }
-
                             // ✅ Save admin login state
                             final box = Hive.box("AppPrefs");
                             await box.put("admin_logged_in", true);

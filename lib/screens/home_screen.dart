@@ -7,6 +7,7 @@ import 'package:soche_fam_songs/providers/notifications_provider.dart';
 import 'package:soche_fam_songs/providers/songs_provider.dart';
 
 import 'package:soche_fam_songs/screens/admin/admin_sign_in_screen.dart';
+import 'package:soche_fam_songs/screens/member_payments_list_screen.dart';
 import 'package:soche_fam_songs/screens/registration_form_screen.dart';
 import 'package:soche_fam_songs/theme/app_theme.dart';
 import '../screens/lyrics_screen.dart';
@@ -159,6 +160,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               /// ⋮ MENU
+
+              /// ⋮ MENU (Includes Be a Member and Payments)
               PopupMenuButton<String>(
                 color: Theme.of(context).cardColor,
                 icon: const Icon(CupertinoIcons.ellipsis_vertical),
@@ -173,16 +176,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (_) => const MemberRegistrationScreen(),
                       ),
                     );
+                  } else if (value == 'payments') {
+                    // ✅ Dynamic redirection to public billing statement list dashboard panel
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MemberPaymentsListScreen(),
+                      ),
+                    );
                   }
                 },
                 itemBuilder: (_) => const [
-                  PopupMenuItem(
+                  PopupMenuItem<String>(
                     value: 'register',
                     child: Row(
                       children: [
                         Icon(Icons.person_add_outlined),
                         SizedBox(width: 8),
                         Text("Be a Member"),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'payments',
+                    child: Row(
+                      children: [
+                        Icon(CupertinoIcons.creditcard, size: 22),
+                        SizedBox(width: 8),
+                        Text("Payments & Dues"),
                       ],
                     ),
                   ),
